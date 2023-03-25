@@ -1,0 +1,14 @@
+.vscode/
+**/__pycache__
+*.pyc
+sieve_instrumentation/instrumentation
+sieve_instrumentation/config.json
+sieve_server/sieve-server
+sieve_server/server.yaml
+fakegopath/
+sieve_config.json
+user_server/data/lab/
+user_server/data/targets/
+user_server/data/workflow/
+user_server/data/workflow_result/
+
