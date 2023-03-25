@@ -3,11 +3,11 @@ import uuid
 from flask import Flask, request
 from flask import render_template
 from handler import lab, target, workflow, result
-from utils import PROJECT_DIR
+from utils import PROJECT_DIR, DATA_DIR
 router = Flask(__name__, template_folder="./frontend/dist",
                static_folder="./frontend/dist", static_url_path="")
 
-router.config['UPLOAD_FOLDER'] = PROJECT_DIR + "/user_server/static/files"
+router.config['UPLOAD_FOLDER'] = os.path.join(DATA_DIR, "probes")
 
 
 @router.route("/")

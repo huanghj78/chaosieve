@@ -11,4 +11,5 @@ user_server/data/lab/
 user_server/data/targets/
 user_server/data/workflow/
 user_server/data/workflow_result/
+user_server/data/probes/
 
