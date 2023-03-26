@@ -1,4 +1,5 @@
 import json
+import yaml
 import os
 import sys
 import importlib
@@ -34,9 +35,12 @@ def create_lab(name, apiserver_cnt, worker_cnt, target):
     os.chdir(PROJECT_DIR)
     # build(controller_config_dir)
     target_dir = os.path.join(PROJECT_DIR, "examples", target)
-    workflow_dir = os.path.join(DATA_DIR, "empty-workflow")
+    workflow_file = os.path.join(DATA_DIR, "empty-workflow")
+    init_workflow = {"serverEndpoint": name+"-control-plane:12345"}
+    with open(workflow_file, 'w', encoding='utf-8') as f:
+        yaml.dump(data=init_workflow, stream=f, allow_unicode=True)
     setup_cluster(name, target_dir,
-                  workflow_dir, apiserver_cnt, worker_cnt)
+                  workflow_file, apiserver_cnt, worker_cnt)
     setup_operator(name, target_dir)
     with open(file_name, 'w') as f:
         f.write(target)

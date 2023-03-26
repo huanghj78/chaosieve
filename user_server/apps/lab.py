@@ -1,21 +1,4 @@
-import sys
-sys.path.append("/root/chaos_sieve/")
-import subprocess
-import os
-import kubernetes
-import time
-import traceback
-import sieve
-import yaml
-import json
-import shutil
-import docker
-from sieve_common.config import (
-    CommonConfig,
-    load_controller_config,
-    get_common_config,
-    ControllerConfig,
-)
+from utils import PROJECT_DIR, exec_bash
 from sieve_common.common import (
     TestContext,
     TestResult,
@@ -27,10 +10,28 @@ from sieve_common.common import (
     deploy_directory,
     get_all_controllers,
 )
-from utils import PROJECT_DIR, exec_bash
+from sieve_common.config import (
+    CommonConfig,
+    load_controller_config,
+    get_common_config,
+    ControllerConfig,
+)
+import docker
+import shutil
+import json
+import yaml
+import sieve
+import traceback
+import time
+import kubernetes
+import os
+import subprocess
+import sys
+sys.path.append("/root/chaos_sieve/")
 
 DEFAULT_K8S_VERSION = "v1.18.9"
 K8S_VER_TO_APIMACHINERY_VER = {"v1.18.9": "v0.18.9", "v1.23.1": "v0.23.1"}
+
 
 def watch_crd(crds, addrs):
     for addr in addrs:
@@ -51,6 +52,7 @@ def get_apiserver_ports(lab, num_api):
         ports.append(cp_port)
     return ports
 
+
 def update_sieve_client_go_mod_with_version(go_mod_path, version):
     fin = open(go_mod_path)
     data = fin.read()
@@ -68,7 +70,8 @@ def download_controller(
     common_config: CommonConfig,
     controller_config: ControllerConfig,
 ):
-    application_dir = os.path.join(PROJECT_DIR, "app", controller_config.controller_name)
+    application_dir = os.path.join(
+        PROJECT_DIR, "app", controller_config.controller_name)
     # If for some permission issue that we can't remove the operator, try sudo
     if cmd_early_exit("rm -rf %s" % application_dir, early_exit=False) != 0:
         print("We cannot remove %s, try sudo instead" % application_dir)
@@ -101,7 +104,8 @@ def remove_replacement_in_go_mod_file(file):
 def install_lib_for_controller(
     common_config: CommonConfig, controller_config: ControllerConfig
 ):
-    application_dir = os.path.join(PROJECT_DIR, "app", controller_config.controller_name)
+    application_dir = os.path.join(
+        PROJECT_DIR, "app", controller_config.controller_name)
     # download controller_runtime
     cmd_early_exit(
         "go mod download sigs.k8s.io/controller-runtime@%s >> /dev/null"
@@ -194,7 +198,8 @@ def update_go_mod_for_controller(
     common_config: CommonConfig,
     controller_config: ControllerConfig,
 ):
-    application_dir = os.path.join(PROJECT_DIR, "app", controller_config.controller_name)
+    application_dir = os.path.join(
+        PROJECT_DIR, "app", controller_config.controller_name)
     # modify the go.mod to import the libs
     remove_replacement_in_go_mod_file("%s/go.mod" % application_dir)
     with open("%s/go.mod" % application_dir, "a") as go_mod_file:
@@ -268,7 +273,8 @@ def update_go_mod_for_controller(
 def instrument_controller(
     common_config: CommonConfig, controller_config: ControllerConfig, mode
 ):
-    application_dir = os.path.join(PROJECT_DIR, "app", controller_config.controller_name)
+    application_dir = os.path.join(
+        PROJECT_DIR, "app", controller_config.controller_name)
     os.chdir("sieve_instrumentation")
     instrumentation_config = {
         "project": controller_config.controller_name,
@@ -296,7 +302,8 @@ def instrument_controller(
 def install_lib_for_controller_with_vendor(
     common_config: CommonConfig, controller_config: ControllerConfig
 ):
-    application_dir = os.path.join(PROJECT_DIR, "app", controller_config.controller_name)
+    application_dir = os.path.join(
+        PROJECT_DIR, "app", controller_config.controller_name)
     cmd_early_exit(
         "cp -r sieve_client %s"
         % os.path.join(application_dir, controller_config.vendored_sieve_client_path)
@@ -326,7 +333,8 @@ def update_go_mod_for_controller_with_vendor(
     common_config: CommonConfig,
     controller_config: ControllerConfig,
 ):
-    application_dir = os.path.join(PROJECT_DIR, "app", controller_config.controller_name)
+    application_dir = os.path.join(
+        PROJECT_DIR, "app", controller_config.controller_name)
     with open(os.path.join(application_dir, "go.mod"), "a") as go_mod_file:
         go_mod_file.write("require sieve.client v0.0.0\n")
     with open(
@@ -372,7 +380,8 @@ def update_go_mod_for_controller_with_vendor(
 def instrument_controller_with_vendor(
     common_config: CommonConfig, controller_config: ControllerConfig, mode
 ):
-    application_dir = os.path.join(PROJECT_DIR, "app", controller_config.controller_name)
+    application_dir = os.path.join(
+        PROJECT_DIR, "app", controller_config.controller_name)
     os.chdir("sieve_instrumentation")
     instrumentation_config = {
         "project": controller_config.controller_name,
@@ -401,7 +410,8 @@ def build_controller(
     image_tag,
     container_registry,
 ):
-    application_dir = os.path.join(PROJECT_DIR, "app", controller_config.controller_name)
+    application_dir = os.path.join(
+        PROJECT_DIR, "app", controller_config.controller_name)
     os.chdir(application_dir)
     cmd_early_exit("./build.sh %s %s" % (container_registry, image_tag))
     os.chdir(PROJECT_DIR)
@@ -548,7 +558,8 @@ def setup_cluster(name, controller_config_dir, test_plan, apiserver_cnt, worker_
     # TODO: we should build a container image for sieve server
     cmd_early_exit("env GOOS=linux GOARCH=amd64 go build")
     os.chdir(PROJECT_DIR)
-    cmd_early_exit(f"docker cp chaos_server {name}-control-plane:/chaos_server")
+    cmd_early_exit(
+        f"docker cp chaos_server {name}-control-plane:/chaos_server")
 
     cprint("Update APIServer...", bcolors.OKGREEN)
     cmd_early_exit(
@@ -571,6 +582,7 @@ def setup_cluster(name, controller_config_dir, test_plan, apiserver_cnt, worker_
     configmap = _generate_configmap(test_plan)
     print(configmap)
     cmd_early_exit("kubectl apply -f %s " % (configmap))
+    ok("Gen Config Map Finished")
 
     # Preload operator image to kind nodes
     image = "%s/%s:%s" % (
@@ -584,7 +596,6 @@ def setup_cluster(name, controller_config_dir, test_plan, apiserver_cnt, worker_
         print("Cannot load image %s locally, try to pull from remote" % (image))
         cmd_early_exit("docker pull %s" % (image))
         cmd_early_exit(kind_load_cmd)
-    ok("Gen Config Map Finished")
 
     cmd_early_exit("go build user_client.go")
     cmd_early_exit(f"docker cp user_client {name}-control-plane:/chaos_server")

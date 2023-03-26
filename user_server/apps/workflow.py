@@ -18,6 +18,7 @@ from sieve_common.common import (
     deploy_directory,
 )
 
+
 def update_test_plan(lab_name, test_plan, cnt):
     exec_bash(
         f"docker cp {test_plan} {lab_name}-control-plane:/chaos_server/server.yaml")
@@ -29,8 +30,10 @@ def update_test_plan(lab_name, test_plan, cnt):
         print(ret[0])
         return False
 
+
 def generate_config(workflowForm, planForm):
     config = {}
+    config['serverEndpoint'] = workflowForm['labName']
     config['workload'] = workflowForm['workload']
     config['actions'] = []
     for item in planForm['items']:
@@ -44,7 +47,7 @@ def generate_config(workflowForm, planForm):
             action['pauseScope'] = item['actionArgs'][1]
             action['avoidOngoingRead'] = True
         elif action['actionType'] == 'reconnectController':
-            #todo
+            # todo
             return
         elif action['actionType'] == 'delayAPIServer':
             action['apiServerName'] = item['actionArgs'][0]
@@ -74,8 +77,10 @@ def generate_config(workflowForm, planForm):
         config['actions'].append(action)
     return config
 
+
 def check_hypothesis(file_name, tolerance, timeout, log):
-    file_path = os.path.join(PROJECT_DIR, "user_server/static/files", file_name)
+    file_path = os.path.join(
+        PROJECT_DIR, "user_server/static/files", file_name)
     output = exec_bash(f"python3 {file_path}", timeout=timeout)
     if len(output) == 0:
         log.error("TIME OUT")
@@ -91,6 +96,7 @@ def check_hypothesis(file_name, tolerance, timeout, log):
                 log.error(f"{output[idx]} NOT EQUAL TO {tolerance[idx]}")
                 return False
         return True
+
 
 def run_workload(lab_name, target_name, workload, log):
     os.chdir(PROJECT_DIR)
@@ -109,4 +115,3 @@ def run_workload(lab_name, target_name, workload, log):
     process = subprocess.Popen(test_command, shell=True)
     process.wait()
     log.info("Running test workload finish")
-
