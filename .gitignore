@@ -7,6 +7,7 @@ sieve_server/sieve-server
 sieve_server/server.yaml
 fakegopath/
 sieve_config.json
+user_server/data/
 user_server/data/lab/
 user_server/data/targets/
 user_server/data/workflow/

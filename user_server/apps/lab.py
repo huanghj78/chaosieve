@@ -1,3 +1,6 @@
+from utils import PROJECT_DIR
+import sys
+sys.path.append(PROJECT_DIR)
 from utils import PROJECT_DIR, exec_bash
 from sieve_common.common import (
     TestContext,
@@ -20,14 +23,12 @@ import docker
 import shutil
 import json
 import yaml
-import sieve
 import traceback
 import time
 import kubernetes
 import os
 import subprocess
-import sys
-sys.path.append("/root/chaos_sieve/")
+
 
 DEFAULT_K8S_VERSION = "v1.18.9"
 K8S_VER_TO_APIMACHINERY_VER = {"v1.18.9": "v0.18.9", "v1.23.1": "v0.23.1"}
@@ -504,7 +505,7 @@ def _generate_kind_config(num_apiservers, num_workers):
 
 def setup_cluster(name, controller_config_dir, test_plan, apiserver_cnt, worker_cnt):
     common_config = get_common_config()
-    controller_config = sieve.load_controller_config(controller_config_dir)
+    controller_config = load_controller_config(controller_config_dir)
     container_registry = common_config.container_registry
     mode = "test"
     image_tag = "test"
@@ -603,7 +604,7 @@ def setup_cluster(name, controller_config_dir, test_plan, apiserver_cnt, worker_
 
 def setup_operator(lab, controller_config_dir):
     common_config = get_common_config()
-    controller_config = sieve.load_controller_config(controller_config_dir)
+    controller_config = load_controller_config(controller_config_dir)
     num_apiservers = 1
     # deploy_controller(test_context)
     deployment_file = controller_config.controller_deployment_file_path
